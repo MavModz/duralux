@@ -80,6 +80,9 @@ export default function LoginHandler() {
                 setCookie('nrich_token', response.data.nrich_token, 180)
               }
               
+              // Dispatch login event to trigger user online tracking
+              window.dispatchEvent(new Event('user-logged-in'))
+              
               loginSuccess = true
               shouldRedirect = true
             } else {

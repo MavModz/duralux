@@ -7,6 +7,8 @@ import NavigationProvider from "@/contentApi/navigationProvider";
 import SettingSideBarProvider from "@/contentApi/settingSideBarProvider";
 import ThemeCustomizer from "@/components/shared/ThemeCustomizer";
 import LoginHandler from "@/components/auth/LoginHandler";
+import UserOnlineTracker from "@/components/auth/UserOnlineTracker";
+import LogoutModal from "@/components/shared/LogoutModal";
 import { Suspense } from "react";
 
 export const metadata = {
@@ -21,6 +23,8 @@ export default function RootLayout({ children }) {
         <Suspense fallback={null}>
           <LoginHandler />
         </Suspense>
+        <UserOnlineTracker />
+        <LogoutModal />
         <SettingSideBarProvider>
           <NavigationProvider>
             {children}
