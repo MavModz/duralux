@@ -1,5 +1,5 @@
 // API utility functions
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:1011'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:1011'
 
 export const homePost = async (endpoint, payload) => {
   try {

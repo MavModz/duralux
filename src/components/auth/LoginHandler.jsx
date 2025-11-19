@@ -24,7 +24,7 @@ export default function LoginHandler() {
       // Debug: Log environment variable (only in development)
       if (process.env.NODE_ENV === 'development') {
         console.log('CRYPTO_KEY_SECRET exists:', !!process.env.NEXT_PUBLIC_CRYPTO_KEY_SECRET)
-        console.log('API_BASE_URL:', process.env.NEXT_PUBLIC_API_BASE_URL)
+        console.log('API_BASE_URL:', process.env.NEXT_PUBLIC_API_URL)
       }
 
       try {

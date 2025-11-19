@@ -9,7 +9,7 @@ Create a `.env.local` file in the root directory of your project with the follow
 NEXT_PUBLIC_CRYPTO_KEY_SECRET=your-secret-key-here
 
 # API Base URL
-NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
+NEXT_PUBLIC_API_URL=http://localhost:3000
 ```
 
 ## Important Notes:
