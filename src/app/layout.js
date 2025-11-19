@@ -9,6 +9,7 @@ import ThemeCustomizer from "@/components/shared/ThemeCustomizer";
 import LoginHandler from "@/components/auth/LoginHandler";
 import UserOnlineTracker from "@/components/auth/UserOnlineTracker";
 import LogoutModal from "@/components/shared/LogoutModal";
+import UnauthorizedModal from "@/components/shared/UnauthorizedModal";
 import { Suspense } from "react";
 
 export const metadata = {
@@ -25,6 +26,7 @@ export default function RootLayout({ children }) {
         </Suspense>
         <UserOnlineTracker />
         <LogoutModal />
+        <UnauthorizedModal />
         <SettingSideBarProvider>
           <NavigationProvider>
             {children}

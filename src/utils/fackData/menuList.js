@@ -20,7 +20,7 @@ export const menuList = [
             {
                 id: 3,
                 name: "Campaigns",
-                path: "/admin/addleads",
+                path: "/admin/campaign",
                 subdropdownMenu: false
             },
             {
