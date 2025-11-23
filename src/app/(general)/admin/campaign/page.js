@@ -6,7 +6,8 @@ import InquiryTrackingChart from '@/components/widgetsCharts/InquiryTrackingChar
 import ProjectLeads from '@/components/widgetsList/ProjectLeads'
 import ScheduleTwo from '@/components/widgetsList/ScheduleTwo'
 import LeadsStatistics from '@/components/widgetsStatistics/LeadsStatistics'
-import LeadsStatusTwo from '@/components/widgetsTables/LeadsStatusTwo'
+import CampaignTable from '@/components/camapigns/CampaignTable'
+import CreateCampaignSidebar from '@/components/camapigns/CreateCampaignSidebar'
 import { upcomingEventsData } from '@/utils/fackData/upcomingEventsData'
 import React from 'react'
 
@@ -20,13 +21,14 @@ const page = () => {
                 <div className='row'>
                     <LeadsStatistics />
                     <InquiryTrackingChart />
+                    <CampaignTable />
                     <InquiryChannelChart />
-                    <LeadsStatusTwo />
                     <ScheduleTwo title={"Upcoming Events"} data={upcomingEventsData.slice(0, 3)} />
                     <ProjectLeads />
                 </div>
             </div>
             <Footer />
+            <CreateCampaignSidebar />
         </>
     )
 }

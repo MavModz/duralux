@@ -13,8 +13,8 @@ import UnauthorizedModal from "@/components/shared/UnauthorizedModal";
 import { Suspense } from "react";
 
 export const metadata = {
-  title: "Duralux | Dashboard",
-  description: "Duralux is a admin Dashboard create for multipurpose,",
+  title: "STRIDE | The Best CRM & Marketing Automation Platform",
+  description: "Create, share, and earn from your courses—all in one earning platform for creators. Turn your knowledge into profit with Nrich.",
 };
 
 export default function RootLayout({ children }) {

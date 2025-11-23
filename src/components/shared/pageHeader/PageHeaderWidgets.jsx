@@ -33,9 +33,15 @@ const PageHeaderWidgets = () => {
                         </Link>
                     </div>
                 </div>
-                <a href="#" className="btn btn-primary">
+                <a 
+                    href="#" 
+                    className="btn btn-primary"
+                    data-bs-toggle="offcanvas"
+                    data-bs-target="#createCampaignOffcanvas"
+                    aria-controls="createCampaignOffcanvas"
+                >
                     <FiPlus size={16} className='me-2' />
-                    <span>Add Widgets</span>
+                    <span>Add Campaign</span>
                 </a>
             </div>
         </>
