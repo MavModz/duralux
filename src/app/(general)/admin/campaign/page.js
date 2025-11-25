@@ -3,9 +3,10 @@ import PageHeader from '@/components/shared/pageHeader/PageHeader'
 import PageHeaderWidgets from '@/components/shared/pageHeader/PageHeaderWidgets'
 import InquiryChannelChart from '@/components/widgetsCharts/InquiryChannelChart'
 import InquiryTrackingChart from '@/components/widgetsCharts/InquiryTrackingChart'
+import CampaignFunnel from '@/components/camapigns/CampaignFunnel'
 import ProjectLeads from '@/components/widgetsList/ProjectLeads'
 import ScheduleTwo from '@/components/widgetsList/ScheduleTwo'
-import LeadsStatistics from '@/components/widgetsStatistics/LeadsStatistics'
+import CampaignStats from '@/components/camapigns/CampaignStats'
 import CampaignTable from '@/components/camapigns/CampaignTable'
 import CreateCampaignSidebar from '@/components/camapigns/CreateCampaignSidebar'
 import { upcomingEventsData } from '@/utils/fackData/upcomingEventsData'
@@ -19,8 +20,8 @@ const page = () => {
             </PageHeader>
             <div className='main-content'>
                 <div className='row'>
-                    <LeadsStatistics />
-                    <InquiryTrackingChart />
+                    <CampaignStats />
+                    <CampaignFunnel />
                     <CampaignTable />
                     <InquiryChannelChart />
                     <ScheduleTwo title={"Upcoming Events"} data={upcomingEventsData.slice(0, 3)} />

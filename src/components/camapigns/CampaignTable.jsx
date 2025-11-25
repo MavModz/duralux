@@ -6,7 +6,7 @@ import CardHeader from '@/components/shared/CardHeader'
 import CardLoader from '@/components/shared/CardLoader'
 import useCardTitleActions from '@/hooks/useCardTitleActions'
 import Dropdown from '@/components/shared/Dropdown'
-import { homeGet, homeDelete } from '@/utils/api'
+import { homeGet, homeDelete, homePost } from '@/utils/api'
 import { confirmDelete } from '@/utils/confirmDelete'
 import Swal from 'sweetalert2'
 import { FiCopy, FiEdit, FiFilter, FiGitMerge, FiTrash2 } from 'react-icons/fi'
@@ -156,7 +156,7 @@ const CampaignTable = () => {
                 router.push(`/admin/campaign/${id}/edit`)
                 break
             case "Copy":
-                Swal.fire({
+                const copyConfirmation = await Swal.fire({
                     title: "Copy Campaign",
                     text: `Copy "${campaignName}"?`,
                     icon: "question",
@@ -167,19 +167,48 @@ const CampaignTable = () => {
                         confirmButton: "btn btn-primary",
                         cancelButton: "btn btn-secondary",
                     }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Handle copy logic here
+                })
+                
+                if (copyConfirmation.isConfirmed) {
+                    try {
+                        const response = await homePost(`/campaign/${id}/copy`, {})
+                        if (response?.status && response?.data?.status) {
+                            Swal.fire({
+                                title: "Copied!",
+                                text: "Campaign copied successfully.",
+                                icon: "success",
+                                customClass: {
+                                    confirmButton: "btn btn-success",
+                                }
+                            })
+                            // Refresh campaigns list
+                            fetchCampaigns()
+                            // Dispatch event to refresh other components
+                            if (typeof window !== 'undefined') {
+                                window.dispatchEvent(new CustomEvent('campaign-created'))
+                            }
+                        } else {
+                            Swal.fire({
+                                title: "Error!",
+                                text: response?.data?.message || response?.data?.msg || 'Failed to copy campaign',
+                                icon: "error",
+                                customClass: {
+                                    confirmButton: "btn btn-danger",
+                                }
+                            })
+                        }
+                    } catch (error) {
+                        console.error('Error copying campaign:', error)
                         Swal.fire({
-                            title: "Copied!",
-                            text: "Campaign copied successfully.",
-                            icon: "success",
+                            title: "Error!",
+                            text: 'An error occurred while copying the campaign',
+                            icon: "error",
                             customClass: {
-                                confirmButton: "btn btn-success",
+                                confirmButton: "btn btn-danger",
                             }
                         })
                     }
-                })
+                }
                 break
             case "Delete":
                 const confirmation = await confirmDelete(id)
@@ -247,6 +276,12 @@ const CampaignTable = () => {
                 })
                 break
             case "View Funnel":
+                // Dispatch event to update CampaignStats with campaign_id
+                if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('view-campaign-funnel', {
+                        detail: { campaignId: id }
+                    }))
+                }
                 router.push(`/admin/campaign/${id}/funnel`)
                 break
             default:
@@ -376,7 +411,7 @@ const CampaignTable = () => {
                                                             dropdownParentStyle={"hstack text-end justify-content-end"} 
                                                             id={campaignId} 
                                                             onClick={handleAction}
-                                                        />
+                                    />
                                                     </td>
                                                 </tr>
                                             )
