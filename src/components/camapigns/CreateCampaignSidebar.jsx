@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react'
 import SelectManagersModal from './SelectManagersModal'
 import LeadDistributionModal from './LeadDistributionModal'
-import { homePost } from '@/utils/api'
+import { homePost, homePut, homeGet } from '@/utils/api'
 import Swal from 'sweetalert2'
 
 const CreateCampaignSidebar = () => {
@@ -13,6 +13,7 @@ const CreateCampaignSidebar = () => {
     const [leadDistribution, setLeadDistribution] = useState(null)
     const [errors, setErrors] = useState({})
     const [isSaving, setIsSaving] = useState(false)
+    const [editingCampaignId, setEditingCampaignId] = useState(null)
 
     const handleSave = async (e) => {
         e.preventDefault()
@@ -54,13 +55,22 @@ const CreateCampaignSidebar = () => {
 
         try {
             setIsSaving(true)
-            const response = await homePost('/campaign', payload)
+            let response
+            
+            if (editingCampaignId) {
+                // Update existing campaign
+                response = await homePut(`/campaign/${editingCampaignId}`, payload)
+            } else {
+                // Create new campaign
+                response = await homePost('/campaign', payload)
+            }
             
             if (response?.status && response?.data?.status) {
                 // Reset form
                 setCampaignName('')
                 setSelectedManagers([])
                 setLeadDistribution(null)
+                setEditingCampaignId(null)
                 
                 // Dispatch event to refresh campaigns list
                 if (typeof window !== 'undefined') {
@@ -70,7 +80,7 @@ const CreateCampaignSidebar = () => {
                 // Show success message and close sidebar when user clicks OK
                 Swal.fire({
                     title: "Success!",
-                    text: "Campaign created successfully.",
+                    text: editingCampaignId ? "Campaign updated successfully." : "Campaign created successfully.",
                     icon: "success",
                     customClass: {
                         confirmButton: "btn btn-success",
@@ -94,7 +104,7 @@ const CreateCampaignSidebar = () => {
             } else {
                 Swal.fire({
                     title: "Error!",
-                    text: response?.data?.message || response?.data?.msg || 'Failed to create campaign',
+                    text: response?.data?.message || response?.data?.msg || (editingCampaignId ? 'Failed to update campaign' : 'Failed to create campaign'),
                     icon: "error",
                     customClass: {
                         confirmButton: "btn btn-danger",
@@ -102,10 +112,10 @@ const CreateCampaignSidebar = () => {
                 })
             }
         } catch (error) {
-            console.error('Error creating campaign:', error)
+            console.error('Error saving campaign:', error)
             Swal.fire({
                 title: "Error!",
-                text: 'An error occurred while creating the campaign',
+                text: editingCampaignId ? 'An error occurred while updating the campaign' : 'An error occurred while creating the campaign',
                 icon: "error",
                 customClass: {
                     confirmButton: "btn btn-danger",
@@ -116,11 +126,71 @@ const CreateCampaignSidebar = () => {
         }
     }
 
+    // Listen for edit campaign event
+    useEffect(() => {
+        const handleEditCampaign = async (event) => {
+            const { campaignId, campaignName: name, managers, leadAutomation } = event.detail
+            
+            setEditingCampaignId(campaignId)
+            setCampaignName(name || '')
+            setSelectedManagers(managers || [])
+            
+            // Map lead automation data
+            if (leadAutomation) {
+                const distributionData = {
+                    method: leadAutomation.type,
+                }
+                
+                if (leadAutomation.type === 'round_robin' && leadAutomation.roundRobin?.subadmins) {
+                    // Fetch full subadmin objects from API
+                    try {
+                        const response = await homeGet('/campaign-managers')
+                        
+                        if (response?.status && response?.data?.status && response?.data?.data) {
+                            const allManagers = response.data.data
+                            const subadminIds = leadAutomation.roundRobin.subadmins
+                            // Map IDs to full manager objects, maintaining order
+                            const subadminObjects = subadminIds
+                                .map(id => allManagers.find(m => m._id === id))
+                                .filter(Boolean) // Remove undefined entries
+                            
+                            distributionData.subadmins = subadminObjects
+                        } else {
+                            // Fallback: create objects with just _id
+                            distributionData.subadmins = leadAutomation.roundRobin.subadmins.map(id => ({ _id: id }))
+                        }
+                    } catch (error) {
+                        console.error('Error fetching subadmins:', error)
+                        // Fallback: create objects with just _id
+                        distributionData.subadmins = leadAutomation.roundRobin.subadmins.map(id => ({ _id: id }))
+                    }
+                }
+                
+                setLeadDistribution(distributionData)
+            } else {
+                setLeadDistribution(null)
+            }
+            
+            setErrors({})
+        }
+
+        if (typeof window !== 'undefined') {
+            window.addEventListener('edit-campaign', handleEditCampaign)
+        }
+
+        return () => {
+            if (typeof window !== 'undefined') {
+                window.removeEventListener('edit-campaign', handleEditCampaign)
+            }
+        }
+    }, [])
+
     const handleClose = () => {
         setCampaignName('')
         setSelectedManagers([])
         setLeadDistribution(null)
         setErrors({})
+        setEditingCampaignId(null)
     }
 
     const handleSelectManagers = () => {
@@ -259,7 +329,7 @@ const CreateCampaignSidebar = () => {
         >
             <div className="offcanvas-header border-bottom">
                 <h5 className="offcanvas-title" id="createCampaignOffcanvasLabel">
-                    Create Your Campaign
+                    {editingCampaignId ? 'Edit Campaign' : 'Create Your Campaign'}
                 </h5>
                 <button
                     type="button"
@@ -409,6 +479,7 @@ const CreateCampaignSidebar = () => {
                 isOpen={showLeadDistributionModal}
                 onClose={handleLeadDistributionModalClose}
                 onSave={handleLeadDistributionSave}
+                initialDistribution={leadDistribution}
             />
         </div>
     )

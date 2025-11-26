@@ -10,7 +10,7 @@ const AUTOMATION_METHODS = [
     { id: 'frequency_based', label: 'Frequency Based' }
 ]
 
-const LeadDistributionModal = ({ isOpen, onClose, onSave }) => {
+const LeadDistributionModal = ({ isOpen, onClose, onSave, initialDistribution = null }) => {
     const [currentStep, setCurrentStep] = useState(1)
     const [selectedMethod, setSelectedMethod] = useState(null)
     const [subadmins, setSubadmins] = useState([])
@@ -19,12 +19,23 @@ const LeadDistributionModal = ({ isOpen, onClose, onSave }) => {
 
     useEffect(() => {
         if (isOpen) {
-            // Reset state when modal opens
-            setCurrentStep(1)
-            setSelectedMethod(null)
-            setSelectedSubadmins([])
+            // Pre-fill data if initialDistribution is provided (edit mode)
+            if (initialDistribution) {
+                setSelectedMethod(initialDistribution.method)
+                if (initialDistribution.method === 'round_robin' && initialDistribution.subadmins) {
+                    setSelectedSubadmins(initialDistribution.subadmins)
+                    setCurrentStep(3) // Go to review step if subadmins are already selected
+                } else {
+                    setCurrentStep(1)
+                }
+            } else {
+                // Reset state when modal opens (create mode)
+                setCurrentStep(1)
+                setSelectedMethod(null)
+                setSelectedSubadmins([])
+            }
         }
-    }, [isOpen])
+    }, [isOpen, initialDistribution])
 
     useEffect(() => {
         if (selectedMethod === 'round_robin' && currentStep === 2) {

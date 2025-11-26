@@ -6,7 +6,7 @@ import CardHeader from '@/components/shared/CardHeader'
 import CardLoader from '@/components/shared/CardLoader'
 import useCardTitleActions from '@/hooks/useCardTitleActions'
 import Dropdown from '@/components/shared/Dropdown'
-import { homeGet, homeDelete, homePost } from '@/utils/api'
+import { homeGet, homeDelete, homePost, homePut } from '@/utils/api'
 import { confirmDelete } from '@/utils/confirmDelete'
 import Swal from 'sweetalert2'
 import { FiCopy, FiEdit, FiFilter, FiGitMerge, FiTrash2 } from 'react-icons/fi'
@@ -147,13 +147,91 @@ const CampaignTable = () => {
         }
     }
 
+    const handleEditCampaign = async (id) => {
+        try {
+            const response = await homeGet(`/campaign/${id}`)
+            
+            if (response?.status && response?.data?.status && response?.data?.data) {
+                const campaignData = response.data.data
+                
+                    // Dispatch event to open sidebar with edit data
+                    if (typeof window !== 'undefined') {
+                        window.dispatchEvent(new CustomEvent('edit-campaign', {
+                            detail: {
+                                campaignId: campaignData._id,
+                                campaignName: campaignData.campaign_name,
+                                managers: campaignData.managers || [],
+                                leadAutomation: campaignData.leadautomation?.[0] || null
+                            }
+                        }))
+                        
+                        // Open the sidebar - wait for event to be processed first
+                        setTimeout(() => {
+                            const offcanvasElement = document.getElementById('createCampaignOffcanvas')
+                            if (offcanvasElement) {
+                                // Try Bootstrap API first
+                                if (window.bootstrap && window.bootstrap.Offcanvas) {
+                                    try {
+                                        let offcanvasInstance = window.bootstrap.Offcanvas.getInstance(offcanvasElement)
+                                        if (!offcanvasInstance) {
+                                            offcanvasInstance = new window.bootstrap.Offcanvas(offcanvasElement)
+                                        }
+                                        offcanvasInstance.show()
+                                        return
+                                    } catch (error) {
+                                        console.error('Error opening offcanvas with Bootstrap:', error)
+                                    }
+                                }
+                                
+                                // Fallback: trigger via data attribute (same as Add Campaign button)
+                                const triggerButton = document.querySelector('[data-bs-target="#createCampaignOffcanvas"]')
+                                if (triggerButton) {
+                                    triggerButton.click()
+                                    return
+                                }
+                                
+                                // Last resort: manually show
+                                offcanvasElement.classList.add('show')
+                                offcanvasElement.setAttribute('aria-hidden', 'false')
+                                const backdrop = document.createElement('div')
+                                backdrop.className = 'offcanvas-backdrop fade show'
+                                backdrop.setAttribute('data-bs-dismiss', 'offcanvas')
+                                document.body.appendChild(backdrop)
+                                document.body.classList.add('modal-open')
+                            }
+                        }, 300)
+                    }
+            } else {
+                Swal.fire({
+                    title: "Error!",
+                    text: response?.data?.message || response?.data?.msg || 'Failed to load campaign data',
+                    icon: "error",
+                    customClass: {
+                        confirmButton: "btn btn-danger",
+                    }
+                })
+            }
+        } catch (error) {
+            console.error('Error fetching campaign:', error)
+            Swal.fire({
+                title: "Error!",
+                text: 'An error occurred while loading the campaign',
+                icon: "error",
+                customClass: {
+                    confirmButton: "btn btn-danger",
+                }
+            })
+        }
+    }
+
     const handleAction = async (label, id) => {
         const campaign = campaigns.find(c => (c._id === id || c.id === id))
         const campaignName = campaign?.campaign_name || campaign?.name || 'Campaign'
         
         switch (label) {
             case "Edit":
-                router.push(`/admin/campaign/${id}/edit`)
+                // Fetch campaign data and open sidebar in edit mode
+                handleEditCampaign(id)
                 break
             case "Copy":
                 const copyConfirmation = await Swal.fire({

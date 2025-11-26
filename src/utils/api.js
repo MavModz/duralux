@@ -58,6 +58,34 @@ export const homeGet = async (endpoint, params = {}) => {
   }
 }
 
+export const homePut = async (endpoint, payload) => {
+  try {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` })
+      },
+      body: JSON.stringify(payload)
+    })
+    
+    const data = await response.json()
+    
+    return {
+      status: response.ok,
+      data: data
+    }
+  } catch (error) {
+    console.error('API Error:', error)
+    return {
+      status: false,
+      data: { msg: error.message || 'An error occurred' }
+    }
+  }
+}
+
 export const homeDelete = async (endpoint, payload = null) => {
   try {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
