@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 import { ref, set, onValue, onDisconnect } from 'firebase/database';
 import { database } from '@/lib/firebase';
 import { getDeviceId } from '@/utils/deviceId';
-import { homeGet } from '@/utils/api';
+import { useDecodedToken } from './useDecodedToken';
 
 /**
  * Hook to track user online status and detect device changes
@@ -13,6 +13,7 @@ import { homeGet } from '@/utils/api';
 export function useUserOnline(userId = null) {
   const listenerRef = useRef(null);
   const disconnectRef = useRef(null);
+  const { userData: decodedUserData, isLoading: isDecodingToken, token } = useDecodedToken();
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -24,37 +25,38 @@ export function useUserOnline(userId = null) {
       return;
     }
 
+    // Wait for token to be decoded
+    if (isDecodingToken) {
+      return;
+    }
+
+    // Check if user has a token
+    if (!token) {
+      return;
+    }
+
     let currentUserId = userId;
     let mounted = true;
 
     const initializeUserOnline = async () => {
       try {
-        // If userId is not provided, fetch it from the API or localStorage
+        // If userId is not provided, get it from decoded token or localStorage fallback
         if (!currentUserId) {
-          try {
-            const response = await homeGet('/api/users/admin');
-            if (response?.status && response?.data?.user?.uid) {
-              currentUserId = response.data.user.uid;
-            } else {
-              // Try to get from localStorage as fallback
-              const userDataStr = localStorage.getItem('userData');
-              if (userDataStr) {
-                const userData = JSON.parse(userDataStr);
-                // Try multiple possible field names
-                currentUserId = userData?.uid || userData?.user?.uid || userData?._id || userData?.id || userData?.user?._id || userData?.user?.id;
-              }
-            }
-          } catch (error) {
-            console.error('[useUserOnline] Error fetching user data:', error);
-            // Try to get from localStorage as fallback
+          if (decodedUserData) {
+            // Extract user ID from decoded token structure: user.uid
+            currentUserId = decodedUserData?.user?.uid || decodedUserData?.user?._id || decodedUserData?.user?.id;
+          }
+          
+          // Fallback to localStorage if not found in decoded token
+          if (!currentUserId) {
             const userDataStr = localStorage.getItem('userData');
             if (userDataStr) {
               try {
                 const userData = JSON.parse(userDataStr);
-                // Try multiple possible field names
-                currentUserId = userData?.uid || userData?.user?.uid || userData?._id || userData?.id || userData?.user?._id || userData?.user?.id;
+                // Try multiple possible field names for user ID
+                currentUserId = userData?.uid || userData?.user?.uid || userData?.user_id || userData?._id || userData?.id || userData?.user?._id || userData?.user?.id;
               } catch (e) {
-                console.error('[useUserOnline] Error parsing userData:', e);
+                console.error('[useUserOnline] Error parsing userData from localStorage:', e);
               }
             }
           }
@@ -113,11 +115,8 @@ export function useUserOnline(userId = null) {
       }
     };
 
-    // Only initialize if user is logged in (has token)
-    const token = localStorage.getItem('token');
-    if (token) {
-      initializeUserOnline();
-    }
+    // Initialize user online tracking
+    initializeUserOnline();
 
     // Cleanup function
     return () => {
@@ -131,6 +130,6 @@ export function useUserOnline(userId = null) {
         disconnectRef.current = null;
       }
     };
-  }, [userId]);
+  }, [userId, decodedUserData, isDecodingToken, token]);
 }
 
