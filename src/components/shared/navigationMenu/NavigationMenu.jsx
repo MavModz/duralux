@@ -20,8 +20,8 @@ const NavigationManu = () => {
                 <div className="m-header">
                     <Link href="/" className="b-brand">
                         {/* <!-- ========   change your logo hear   ============ --> */}
-                        <Image width={140} height={50} src="/images/logo-full.jpg" alt="logo" className="logo logo-lg" />
-                        <Image width={140} height={30} src="/images/logo-abbr.png" alt="logo" className="logo logo-sm" />
+                        <Image width={140} height={50} src="/images/logo-full.jpg" alt="logo" className="logo logo-lg" style={{ objectFit: 'contain' }} />
+                        <Image width={140} height={30} src="/images/logo-abbr.png" alt="logo" className="logo logo-sm" style={{ objectFit: 'contain' }} />
                     </Link>
                 </div>
 

@@ -94,7 +94,7 @@ export default function LoginHandler() {
             errorAlert('Invalid encrypted ID. Please check your URL.')
           }
         } else {
-          // No id in query - don't redirect, just stay on page
+          // No id in query - page.js will handle redirect for home route
           console.log('No ID parameter found in URL')
         }
       } catch (e) {

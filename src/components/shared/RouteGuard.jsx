@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { ROLES } from '@/utils/roles';
+import { getCookie } from '@/utils/cookies';
 
 /**
  * RouteGuard Component
@@ -15,10 +16,34 @@ export default function RouteGuard({ children }) {
 
   useEffect(() => {
     const checkAccess = () => {
+      // Skip check for home route (it handles its own redirect)
+      if (pathname === '/') {
+        setIsAuthorized(true);
+        setIsChecking(false);
+        return;
+      }
+
+      // Check for token in both localStorage and cookies
+      const tokenInLocalStorage = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const tokenInCookie = getCookie('token');
+      const hasToken = !!(tokenInLocalStorage || tokenInCookie);
+
       // Get user role from localStorage
-      const storedRole = localStorage.getItem('userRole');
+      const storedRole = typeof window !== 'undefined' ? localStorage.getItem('userRole') : null;
       
-      // If not logged in, allow (auth will handle it)
+      // Check if accessing protected routes (admin or subadmin routes)
+      const isProtectedRoute = pathname.startsWith('/admin') || pathname.startsWith('/subadmin');
+      
+      // If accessing protected routes without token, redirect to base URL
+      if (isProtectedRoute && !hasToken) {
+        const baseUrl = process.env.NEXT_PUBLIC_NRICH_BASE_URL || 'https://nrichlearning.com/';
+        window.location.replace(baseUrl);
+        setIsAuthorized(false);
+        setIsChecking(false);
+        return;
+      }
+      
+      // If not logged in and not on protected route, allow (auth will handle it)
       if (!storedRole) {
         setIsAuthorized(true);
         setIsChecking(false);
