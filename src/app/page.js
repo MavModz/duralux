@@ -1,13 +1,13 @@
 'use client'
-import { useEffect } from 'react'
+import { useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { normalizeRole } from '@/utils/roles'
 
 /**
- * Minimal home page that immediately redirects to the appropriate dashboard
- * Prevents 404 error while allowing client-side redirect logic to work
+ * Component that handles the redirect logic using searchParams
+ * Must be wrapped in Suspense boundary
  */
-export default function Home() {
+function HomeRedirect() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -57,6 +57,28 @@ export default function Home() {
     }}>
       <div>Loading...</div>
     </div>
+  )
+}
+
+/**
+ * Minimal home page that immediately redirects to the appropriate dashboard
+ * Prevents 404 error while allowing client-side redirect logic to work
+ */
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        width: '100vw'
+      }}>
+        <div>Loading...</div>
+      </div>
+    }>
+      <HomeRedirect />
+    </Suspense>
   )
 }
 
