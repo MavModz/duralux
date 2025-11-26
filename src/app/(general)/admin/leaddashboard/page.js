@@ -18,7 +18,7 @@ const page = () => {
           <DashboardStatsOverview />
           <LeadsRecordChart />
           <CrmIntegration cardYSpaceClass="hrozintioal-card" borderShow={true} title="CRM Integration" />
-          <UpcomingSchedule title={"Upcoming Schedule"} />
+          <UpcomingSchedule title={"Upcoming Follow-Ups"} />
           <CrmLeads title={"CRM Leads"} />
         </div>
       </div>

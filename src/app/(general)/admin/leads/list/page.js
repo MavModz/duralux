@@ -1,17 +1,27 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import PageHeader from '@/components/shared/pageHeader/PageHeader'
 import LeadsHeader from '@/components/leads/LeadsHeader'
 import LeadssTable from '@/components/leads/LeadsTable'
 import Footer from '@/components/shared/Footer'
 import { homePost } from '@/utils/api'
 
-const page = () => {
+function LeadsListContent() {
+    const searchParams = useSearchParams()
     const [selectedLeadIds, setSelectedLeadIds] = useState([]);
     const [activeTab, setActiveTab] = useState('all');
     const [followUpCount, setFollowUpCount] = useState(0);
     const [incompleteCount, setIncompleteCount] = useState(0);
     const [leadsData, setLeadsData] = useState([]);
+
+    // Read tab from URL query parameter on mount
+    useEffect(() => {
+        const tabFromUrl = searchParams?.get('tab')
+        if (tabFromUrl && ['all', 'follow-up', 'incomplete'].includes(tabFromUrl)) {
+            setActiveTab(tabFromUrl)
+        }
+    }, [searchParams])
 
     // Fetch counts for Follow Up and Incomplete leads
     useEffect(() => {
@@ -91,4 +101,16 @@ const page = () => {
     )
 }
 
-export default page
+export default function Page() {
+    return (
+        <Suspense fallback={
+            <div className="d-flex align-items-center justify-content-center" style={{ minHeight: '100vh' }}>
+                <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        }>
+            <LeadsListContent />
+        </Suspense>
+    )
+}

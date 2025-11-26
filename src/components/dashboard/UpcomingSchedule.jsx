@@ -155,7 +155,7 @@ const UpcomingSchedule = ({ title }) => {
                             </div>
                         )}
                     </div>
-                    <Link href="#" className="card-footer fs-11 fw-bold text-uppercase text-center py-4">Upcomming Schedule</Link>
+                    <Link href="/admin/leads/list?tab=follow-up" className="card-footer fs-11 fw-bold text-uppercase text-center py-4">Upcomming Follow-Ups</Link>
                     <CardLoader refreshKey={refreshKey} />
                 </div>
             </div>
